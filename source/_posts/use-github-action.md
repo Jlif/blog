@@ -1,5 +1,5 @@
 ---
-title: use-github-action
+title: 使用 GitHub Actions 实现 Hexo 博客的 CICD
 date: 2021-03-07 00:06:40
 categories: hexo
 ---
@@ -8,7 +8,6 @@ categories: hexo
 
 使用测试
 
-
 ### 参考文档
 
-https://hdj.me/github-actions-hexo-cicd/
+- [如何正确的使用 GitHub Actions 实现 Hexo 博客的 CICD](https://hdj.me/github-actions-hexo-cicd/)
