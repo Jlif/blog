@@ -1,8 +1,9 @@
 ---
-layout: "post"
-title: "数据结构与算法之美（二）"
-date: "2019-02-18"
+layout: post
+title: 数据结构与算法之美（二）
+date: '2019-02-18'
 categories: 数据结构与算法
+abbrlink: c13a6d36
 ---
 
 # 栈（stack）

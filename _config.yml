@@ -5,17 +5,20 @@
 # Site
 title: 江城子的博客
 subtitle:
-description:
+description: 一个普通程序员的个人博客
 author: 江城子
 language: zh-CN
-timezone:
+timezone: Asia/Shanghai
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
 url: https://www.jiangchen.tech
 root: /
 # permalink: :year/:month/:day/:title/
-permalink: :title/
+permalink: :year/:month:abbrlink.html
+abbrlink: 
+  alg: crc32 #算法选项：crc16丨crc32
+  rep: hex #输出进制：dec为十进制，hex为十六进制
 permalink_defaults:
 
 # Directory
@@ -33,7 +36,8 @@ new_post_name: :title.md # File name of new posts
 default_layout: post
 titlecase: false # Transform title into titlecase
 external_link: true # Open external links in new tab
-filename_case: 0
+filename_case: 1 # 把文件名称转换为 (1) 小写或 (2) 大写
+auto_spacing: true # 在中文和英文之间加入空格
 render_drafts: false
 post_asset_folder: false
 relative_link: false

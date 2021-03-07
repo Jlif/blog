@@ -1,8 +1,9 @@
 ---
-layout: "post"
-title: "博客迁移到 Hexo"
-date: "2017-04-02"
+layout: post
+title: 博客迁移到 Hexo
+date: '2017-04-02'
 categories: 流水账
+abbrlink: 2e465f5a
 ---
 
 最近在做一些前端，对前端稍微有些了解，顺便重新改版了我的整个博客，现在使用的是`Hexo`工具发布的，配合`npm`命令，相当省心，写完自动生成静态页面，自动上传部署到 github 上面。

@@ -1,8 +1,9 @@
 ---
-layout: "post"
-title: "关于 IO 的一些理解"
-date: "2019-04-05"
+layout: post
+title: 关于 IO 的一些理解
+date: '2019-04-05'
 categories: 计算机基础
+abbrlink: 701d90cf
 ---
 
 ## 常见的 IO 模型

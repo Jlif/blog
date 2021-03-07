@@ -1,8 +1,9 @@
 ---
-layout: "post"
-title: "MySQL 概览"
-date: "2019-10-23"
+layout: post
+title: MySQL 概览
+date: '2019-10-23'
 categories: 数据库
+abbrlink: b0dd67a
 ---
 
 # MySQL 总结与分享

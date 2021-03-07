@@ -1,8 +1,9 @@
 ---
-layout: "post"
-title: "使用 python 脚本下载图片"
-date: "2018-05-26"
+layout: post
+title: 使用 python 脚本下载图片
+date: '2018-05-26'
 categories: 瞎折腾
+abbrlink: 835d5244
 ---
 
 ## 前言

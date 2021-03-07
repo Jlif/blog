@@ -1,8 +1,9 @@
 ---
-layout: "post"
-title: "前端入门文档索引"
-date: "2019-07-12"
+layout: post
+title: 前端入门文档索引
+date: '2019-07-12'
 categories: 前端
+abbrlink: b310d7ef
 ---
 
 # 基础知识

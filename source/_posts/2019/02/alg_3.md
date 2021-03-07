@@ -1,8 +1,9 @@
 ---
-layout: "post"
-title: "数据结构与算法之美（三）"
-date: "2019-02-19"
+layout: post
+title: 数据结构与算法之美（三）
+date: '2019-02-19'
 categories: 数据结构与算法
+abbrlink: 8c24ce64
 ---
 
 # 递归（recursion）

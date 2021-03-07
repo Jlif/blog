@@ -1,8 +1,9 @@
 ---
-layout: "post"
-title: "使用 docker 部署 spring-boot 项目"
-date: "2018-06-14"
+layout: post
+title: 使用 docker 部署 spring-boot 项目
+date: '2018-06-14'
 categories: docker
+abbrlink: d7382792
 ---
 
 # 前言

@@ -1,9 +1,10 @@
 ---
-layout: "post"
-title: "数据结构与算法之美（一）"
-date: "2019-02-17"
+layout: post
+title: 数据结构与算法之美（一）
+date: '2019-02-17'
 categories: 数据结构与算法
 mathjax: true
+abbrlink: f12c81ee
 ---
 
 # 前言

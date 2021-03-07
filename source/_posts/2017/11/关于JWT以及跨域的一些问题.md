@@ -1,8 +1,9 @@
 ---
-layout: "post"
-title: "JWT 和跨域的一些总结"
-date: "2017-11-17"
+layout: post
+title: JWT 和跨域的一些总结
+date: '2017-11-17'
 categories: 开发总结
+abbrlink: 7680494f
 ---
 # JWT
 

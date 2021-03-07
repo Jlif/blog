@@ -1,8 +1,9 @@
 ---
-layout: "post"
-title: "使用 RocketMQ 的一些总结"
-date: "2018-12-19"
+layout: post
+title: 使用 RocketMQ 的一些总结
+date: '2018-12-19'
 categories: 消息中间件
+abbrlink: 61fe2e4c
 ---
 
 # 前言

@@ -1,8 +1,9 @@
 ---
-layout: "post"
-title: "关于 MySQL 若干问题的总结"
-date: "2017-11-08"
+layout: post
+title: 关于 MySQL 若干问题的总结
+date: '2017-11-08'
 categories: 数据库
+abbrlink: 49552f71
 ---
 
 今天碰到一个问题，就是往数据库存中文名字的时候，发现存不进去，错误提示如下：
