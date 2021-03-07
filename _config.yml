@@ -15,7 +15,7 @@ timezone: Asia/Shanghai
 url: https://www.jiangchen.tech
 root: /
 # permalink: :year/:month/:day/:title/
-permalink: :year/:month:abbrlink.html
+permalink: :year/:month/:abbrlink.html
 abbrlink: 
   alg: crc32 #算法选项：crc16丨crc32
   rep: hex #输出进制：dec为十进制，hex为十六进制
