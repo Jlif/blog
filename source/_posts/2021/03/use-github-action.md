@@ -1,7 +1,7 @@
 ---
 title: 使用 GitHub Actions 实现 Hexo 博客的 CICD
 date: 2021-03-07 00:06:40
-categories: hexo
+categories: 博客
 abbrlink: 710a5ed8
 ---
 
