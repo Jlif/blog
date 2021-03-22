@@ -94,3 +94,12 @@ deploy:
   repo: git@github.com:Jlif/jlif.github.io.git
   branch: master
   message: "Github CI Auto Builder at {{ now('YYYY-MM-DD HH:mm:ss Z') }}"
+
+feed:
+    type: atom
+    path: atom.xml
+    limit: 20
+    hub:
+    content:
+    content_limit:
+    content_limit_delim: ' '
