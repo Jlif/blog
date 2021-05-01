@@ -1,5 +1,5 @@
 ---
-title: jvm-03
+title: JVM 相关总结（三）
 categories: JVM
 abbrlink: f7703578
 date: 2021-05-02 00:29:21
@@ -10,7 +10,7 @@ date: 2021-05-02 00:29:21
 ## GC 日志解读与分析
 
 ### 示例代码
-
+<!-- more -->
 ```java
 
 import java.util.Random;
@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.LongAdder;
 */
 public class GCLogAnalysis {
     private static Random random = new Random();
-<!-- more -->
+
     public static void main(String[] args) {
         // 当前毫秒时间戳
         long startMillis = System.currentTimeMillis();
