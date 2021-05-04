@@ -16,7 +16,7 @@ abbrlink: 701d90cf
 - 信号驱动 IO 模型
 - 异步 IO 模型
 <!-- more-->
-![五种 IO 模型](http://ww1.sinaimg.cn/large/9778ac02gy1g1rodiotv8j20go0a13zn.jpg)
+![五种 IO 模型](https://img.jiangchen.tech//20210505011909.png)
 
 ## 阻塞 IO 模型
 
