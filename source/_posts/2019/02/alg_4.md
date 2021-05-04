@@ -218,4 +218,4 @@ public static void selectSort(int[] a, int n) {
 
 ### 三种排序算法比较
 
-![三种排序算法比较](http://ww1.sinaimg.cn/large/9778ac02ly1g0ksso2vd4j20vq0g876y.jpg)
+![三种排序算法比较](https://img.jiangchen.tech//20210505012405.png)

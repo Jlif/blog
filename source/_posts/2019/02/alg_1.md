@@ -16,7 +16,7 @@ abbrlink: f12c81ee
 
 # 数据结构与算法总览
 
-![数据结构与算法总览](http://ww1.sinaimg.cn/large/9778ac02gy1g09foyc5jnj216m2kqu05.jpg)
+![数据结构与算法总览](https://img.jiangchen.tech//20210505012538.png)
 
 ## 核心
 
@@ -48,7 +48,7 @@ abbrlink: f12c81ee
 
 ## 算法复杂度
 
-![算法复杂度量级](http://ww1.sinaimg.cn/large/9778ac02gy1g09gbjbvjmj20vq0fwjti.jpg)
+![算法复杂度量级](https://img.jiangchen.tech//20210505012615.png)
 
 对于刚罗列的复杂度量级，我们可以粗略地分为两类，`多项式量级`和`非多项式量级`。其中，非多项式量级只有两个：O($n^2$) 和 O($n!$)
 
@@ -56,7 +56,7 @@ abbrlink: f12c81ee
 
 虽然复杂度看似很多，但实际上常用的就下面三种：
 
-![常用的复杂度分析](http://ww1.sinaimg.cn/large/9778ac02gy1g09gu6e653j20vq0hsjsq.jpg)
+![常用的复杂度分析](https://img.jiangchen.tech//20210505012642.png)
 
 关于复杂度本身，还可以分为：
 
@@ -67,7 +67,7 @@ abbrlink: f12c81ee
 
 # 学习算法推荐书单
 
-![推荐书单](http://ww1.sinaimg.cn/large/9778ac02gy1g09h7lguznj20vq0natdv.jpg)
+![推荐书单](https://img.jiangchen.tech//20210505012704.png)
 
 其实除了上述的书单，对于 Java 工程师，我尤其要推荐一本《算法》第四版。
 
@@ -75,11 +75,11 @@ abbrlink: f12c81ee
 
 ## 线性表数据结构
 
-![线性表数据结构](http://ww1.sinaimg.cn/large/9778ac02gy1g09hanxilnj20vq0n5acy.jpg)
+![线性表数据结构](https://img.jiangchen.tech//20210505012724.png)
 
 ## 非线性表数据结构
 
-![非线性表数据结构](http://ww1.sinaimg.cn/large/9778ac02gy1g09hbuqbjfj20vq0k7q4w.jpg)
+![非线性表数据结构](https://img.jiangchen.tech//20210505012744.png)
 
 # 数组（Array）
 
@@ -105,11 +105,11 @@ abbrlink: f12c81ee
 
 ## 数组与链表内存分布区别
 
-![数组与链表内存分布区别](http://ww1.sinaimg.cn/large/9778ac02gy1g09hy8pcv1j20vq0jfgne.jpg)
+![数组与链表内存分布区别](https://img.jiangchen.tech//20210505012801.png)
 
 ## 单链表
 
-![单链表](http://ww1.sinaimg.cn/large/9778ac02gy1g09hz5dbbnj20vq0b3dgs.jpg)
+![单链表](https://img.jiangchen.tech//20210505012817.png)
 
 在链表里面，有两个结点是比较特殊的，它们分别是第一个结点和最后一个结点。我们习惯性地把第一个结点叫作头结点，把最后一个结点叫作尾结点。其中，头结点用来记录链表的基地址。有了它，我们就可以遍历得到整条链表。而尾结点特殊的地方是：指针不是指向下一个结点，而是指向一个空地址 NULL，表示这是链表上最后一个结点。
 
@@ -119,7 +119,7 @@ abbrlink: f12c81ee
 
 ### 循环链表
 
-![循环链表](http://ww1.sinaimg.cn/large/9778ac02gy1g09i1rmiy4j20vq0b33zb.jpg)
+![循环链表](https://img.jiangchen.tech//20210505012835.png)
 
 和单链表相比，循环链表的优点是从链尾到链头比较方便。当要处理的数据具有环型结构特点时，就特别适合采用循环链表。比如著名的`约瑟夫问题`。尽管用单链表也可以实现，但是用循环链表实现的话，代码就会简洁很多。
 
@@ -131,7 +131,7 @@ abbrlink: f12c81ee
 
 ### 双向链表
 
-![双向链表](http://ww1.sinaimg.cn/large/9778ac02gy1g09i3selksj20vq0b3jsf.jpg)
+![双向链表](https://img.jiangchen.tech//20210505012852.png)
 
 从图中可以看出来，双向链表需要额外的两个空间来存储后继结点和前驱结点的地址。所以，如果存储同样多的数据，双向链表要比单链表占用更多的内存空间。虽然两个指针比较浪费存储空间，但可以支持双向遍历，这样也带来了双向链表操作的灵活性。从结构上来看，双向链表可以支持 O(1) 时间复杂度的情况下找到前驱结点，正是这样的特点，也使双向链表在某些情况下的插入、删除等操作都要比单链表简单、高效。
 
