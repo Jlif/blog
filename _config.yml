@@ -12,7 +12,7 @@ timezone: Asia/Shanghai
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: https://www.jiangchen.tech
+url: https://blog.jiangchen.tech
 root: /
 # permalink: :year/:month/:day/:title/
 permalink: :year/:month/:abbrlink.html
@@ -68,6 +68,7 @@ tag_map:
 ## http://momentjs.com/docs/#/displaying/format/
 date_format: YYYY-MM-DD
 time_format: HH:mm:ss
+updated_option: date
 
 # Pagination
 ## Set per_page to 0 to disable pagination
