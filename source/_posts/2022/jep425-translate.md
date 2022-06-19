@@ -273,26 +273,135 @@ Thread thread = Thread.ofVirtual().name("duke").unstarted(runnable);
 在某些情况下，局部变量可能被证明是线程本地变量的一个更好的替代品。
 
 #### java.util.concurrent
+支持锁定的原始 API， [java.util.concurrent.LockSupport](https://docs.oracle.com/en/java/javase/18/docs/api/java.base/java/util/concurrent/locks/LockSupport.html) ，现在支持虚拟线程。挂起一个虚拟线程会释放底层的平台线程去做其他工作，而恢复一个虚拟线程则会安排它继续工作。对`LockSupport`的这一改变使得所有使用它的API（锁、Semaphores、阻塞队列等）在虚拟线程中被调用时能够优雅地挂起。
+
+此外：
+
+- `Executors.newThreadPerTaskExecutor(ThreadFactory)` 和 `Executors.newVirtualThreadPerTaskExecutor()` 创建一个 `ExecutorService`，为每个任务创建一个新线程。这些方法能够实现与使用线程池和 `ExecutorService` 的现有代码的迁移和互操作性。
+- `ExecutorService` 现在扩展了 `AutoCloseable`，从而允许该 API 与 try-with-resource 结构一起使用，如上面的例子所示。
+- `Future` 现在定义了一些方法来获取已完成任务的结果或异常，以及获取任务的状态。结合起来，这些新增的方法使得使用 `Future` 对象作为流的元素变得很容易，过滤一个 `Future` 流以找到已完成的任务，然后通过映射来获得一个结果流。这些方法在为 [structured concurrency](https://openjdk.java.net/jeps/8277129) 提出的 API 添加中也很有用。
 
 #### Networking
+`java.net` 和 `java.nio.channels` 包中的网络 API 的实现现在可以与虚拟线程一起工作。在虚拟线程上进行的操作，如建立网络连接或从 socket 中读取，会释放底层平台线程来做其他工作。
+
+为了允许中断和取消，由 `java.net.Socket`、`ServerSocket` 和 `DatagramSocket` 定义的阻塞式 I/O 方法现在被指定为在虚拟线程中调用时可中断。中断一个在 socket 上阻塞的虚拟线程将取消该线程并关闭该 socket。当从 `InterruptibleChannel` 获取时，这些类型的 socket 上的阻塞 I/O 操作一直是可中断的，因此这一变化使这些 API 在用构造函数创建时的行为与从 `channel` 获取时的行为一致。
 
 #### java.io
+`java.io` 包提供了字节和字符流的 API。这些 API 的实现具有很强的同步性，当它们在虚拟线程中使用时，需要进行修改以避免自旋。
+
+作为背景，面向字节的输入/输出流没有被指定为线程安全的，也没有指定当线程在读或写方法中被阻塞时调用 `close()` 的预期行为。在大多数情况下，从多个并发线程中使用一个特定的输入或输出流是没有意义的。面向字符的读写器也没有被指定为线程安全的，但它们确实为子类暴露了一个锁对象。除了自旋之外，这些类的同步是有问题的，也是不一致的；例如，`InputStreamReader` 和 `OutputStreamWriter` 使用的流解码器和编码器是在流对象而不是锁对象上同步的。
+
+为了防止自旋，现在的实现工作如下：
+
+- `BufferedInputStream`、`BufferedOutputStream`、`BufferedReader`、`BufferedWriter`、`PrintStream` 和 `PrintWriter` 现在在直接使用时使用显式锁而不是监视器。当这些类被子类化时，它们会像以前一样同步。
+- 由 `InputStreamReader` 和 `OutputStreamWriter` 使用的流解码器和编码器现在使用与包裹 `InputStreamReader` 或 `OutputStreamWriter` 相同的锁。
+
+更进一步，要消除所有这些经常不必要的锁，已经超出了本 JEP 的范围。
+
+此外，`BufferedOutputStream`、`BufferedWriter` 和 `OutputStreamWriter` 的流编码器所使用的缓冲区的初始大小现在更小了，以便在堆中有许多 `streams` 或 `writers` 时减少内存的使用（如果有一百万个虚拟线程，每个线程在一个套接字连接上有一个缓冲流，就可能出现这种情况）。
 
 #### Java Native Interface (JNI)
+JNI 定义了一个新的函数，`IsVirtualThread`，用来测试一个对象是否是一个虚拟线程。
+
+JNI 规范在其他方面没有变化。
 
 #### Debugging (JVM TI, JDWP, and JDI)
+调试架构由三个接口组成：JVM 工具接口（JVM TI）、Java Debug Wire Protocol（JDWP）和 Java Debug Interface（JDI）。这三个接口现在都支持虚拟线程。
+
+对 JVM TI 的更新是：
+- 大多数用 jthread（即对 Thread 对象的 JNI 引用）调用的函数可以用对虚拟线程的引用来调用。少数函数，即 `PopFrame`、`ForceEarlyReturn`、`StopThread`、`AgentStartFunction` 和 `GetThreadCpuTime`，在虚拟线程上不被支持。`SetLocal` *函数仅限于设置在断点或单步事件中被暂停的虚拟线程的最顶层帧中的局部变量。
+- `GetAllThreads` 和 `GetAllStackTraces` 函数现在被指定为返回所有平台线程而不是所有线程。
+- 所有的事件，除了那些在早期虚拟机启动期间或堆迭期间发布的事件外，都可以在虚拟线程的上下文中调用事件回调。
+- 暂停/恢复实现允许虚拟线程被调试器暂停和恢复，并且允许平台线程在虚拟线程被挂载时暂停。
+- 一个新的能力，`can_support_virtual_threads`，让代理对虚拟线程的线程开始和结束事件有更精细的控制。
+- 新函数支持虚拟线程的批量暂停和恢复；这些需要 `can_support_virtual_threads` 能力。
+
+现有的 JVM TI 代理大多会像以前一样工作，但如果他们调用不支持虚拟线程的函数，可能会遇到错误。当一个不知道虚拟线程的代理与一个使用虚拟线程的应用程序一起使用时，就会出现这些错误。对 `GetAllThreads` 的改变是返回一个只包含平台线程的数组，这对一些代理来说可能是个问题。启用 `ThreadStart` 和 `ThreadEnd` 事件的现有代理可能会遇到性能问题，因为他们缺乏将这些事件限制在平台线程的能力。
+
+JDWP 的更新是：
+- 一个新的命令允许调试员测试一个线程是否是一个虚拟线程。
+- `EventRequest` 命令的一个新修改器允许调试者将线程开始和结束事件限制在平台线程上。
+
+对 JDI 的更新是：
+- `com.sun.jdi.ThreadReference` 中的一个新方法测试一个线程是否是一个虚拟线程。
+- `com.sun.jdi.request.ThreadStartRequest` 和 `com.sun.jdi.request.ThreadDeathRequest` 中的新方法将为请求产生的事件限制为平台线程。
+
+如上所述，虚拟线程不被认为是线程组中的活动线程。因此，由 JVM TI 函数 `GetThreadGroupChildren`、JDWP 命令 `ThreadGroupReference`/`Children` 和 JDI 方法 `com.sun.jdi.ThreadGroupReference.threads()` 返回的线程列表只包括平台线程。
 
 #### JDK Flight Recorder (JFR)
+JFR 通过几个新的事件支持虚拟线程：
+- `jdk.VirtualThreadStart` 和 `jdk.VirtualThreadEnd` 表示虚拟线程开始和结束。这些事件在默认情况下是禁用的。
+- `jdk.VirtualThreadPinned` 表示一个虚拟线程在自旋时被挂起，即没有释放其平台线程（见 [讨论](#虚拟线程的运行) ）。这个事件默认是启用的，阈值为 20ms。
+- `jdk.VirtualThreadSubmitFailed` 表示启动或取消挂起虚拟线程失败，可能是因为资源问题。该事件默认为启用。
 
 #### Java Management Extensions (JMX)
+`java.lang.management.ThreadMXBean` 只支持对平台线程的监控和管理。`findDeadlockedThreads()` 方法可以找到处于死锁状态的平台线程的周期；它不会找到处于死锁状态的虚拟线程的周期。
+
+`com.sun.management.HotSpotDiagnosticsMXBean` 中的一个新方法可以生成上述的新式线程转储。这个方法也可以通过平台的 `MBeanServer` 从本地或远程的 JMX 工具间接调用。
 
 #### java.lang.ThreadGroup
+`java.lang.ThreadGroup` 是一个用于分组线程的传统 API，在现代应用中很少使用，也不适合用于分组虚拟线程。我们现在废止并降级了它，并期望在未来引入一个新的线程组织结构，作为 [structured concurrency](https://openjdk.java.net/jeps/8277129) 的一部分。
+
+作为背景，`ThreadGroup` API 可以追溯到 Java 1.0。它最初的目的是提供作业控制操作，如停止一个组中的所有线程。现代代码更倾向于使用 Java 5 中引入的 java.util.concurrent 包的线程池 API。在早期的 Java 版本中，`ThreadGroup` 支持小程序的隔离，但 Java 的安全架构在 Java 1.2 中发生了很大的变化，线程组不再发挥重要作用。线程组的目的也是用于诊断，但这个作用被 Java 5 中引入的监控和管理功能（包括 `java.lang.management` API）所取代了。
+
+除了在很大程度上无关紧要之外，`ThreadGroup` 的 API 和实现还有一些重大问题：
+- 销毁线程组的 API 和机制是有缺陷的。
+- 该 API 要求实现者拥有对组中所有实时线程的引用。这给线程创建、线程启动和线程终止增加了同步和竞争的开销。
+- API 定义了 `enumerate()` 方法，这些方法本质上是荒谬的。
+- API 定义了 `suspend()`，`resume()`，和 `stop()` 方法，这些方法本身就容易造成死锁，而且不安全。
+
+现在，`ThreadGroup` 被规范、废弃，并被降级如下：
+- 删除了显式销毁线程组的能力：最终被废弃的 `destroy()` 方法什么也没做。
+- 守护线程组的概念已被删除：被废弃的 `setDaemon(boolean)` 和 `isDaemon()` 方法所设置和检索的守护状态被忽略了。
+- 该实现不再保留对子组的强引用。当线程组中没有活的线程，并且没有其他东西保持线程组的存活时，该组现在有资格被垃圾回收。
+- 已被废弃的 `suspend()`、`resume()` 和 `stop()` 方法总是抛出一个异常。
 
 ## 备选方案
+- 继续依赖异步 API。异步 API 很难与同步 API 集成，造成了同一 I/O 操作的两种表现形式的分裂世界，并且没有提供统一的操作序列概念，平台可以将其作为故障诊断、监控、调试和剖析的上下文。
+
+- 在 Java 语言中增加语法上的无堆栈程序（即 Async/await）。这比用户模式的线程更容易实现，并将提供一个统一的结构，代表一连串操作的上下文。
+
+    然而，这种结构是新的，与线程分开，在许多方面与它们相似，但在一些细微的方面又不同。它将在为线程设计的 API 和为轮子设计的 API 之间分割开来，并需要将新的类似线程的构造引入平台的所有层面及其工具。这将花费更长的时间让生态系统采用，并且不像用户模式的线程那样优雅，与平台和谐相处。
+
+    大多数已经支持了语法式协程的语言之所以这样做，是因为无法实现用户模式线程（如 Kotlin）、遗留的语义保证（如固有的单线程 JavaScript）或语言特定的技术限制（如 C++）。这些限制并不适用于 Java。
+
+- 引入一个新的公共类来表示用户模式的线程，与 `java.lang.Thread` 无关。这将是一个抛弃 Thread 类 25 年来所积累的不必要的包袱的机会。我们探索了这种方法的几种变体，并进行了原型设计，但在每一种情况下，都要解决如何运行现有代码的问题。
+
+     主要的问题是，`Thread.currentThread()` 被直接或间接地用于现有代码中（例如，在确定锁的所有权，或用于线程局部变量）。这个方法必须返回一个代表当前执行线程的对象。如果我们引入一个新的类来代表用户模式的线程，那么 `currentThread()` 就必须返回某种包装对象，它看起来像一个 `Thread`，但却委托给了用户模式的线程对象。
+
+     让两个对象来代表当前的执行线程会很混乱，所以我们最终得出结论，保留旧的 `Thread` API 并不是一个重大的障碍。除了 `currentThread()` 等少数方法外，开发人员很少直接使用 `Thread` API；他们大多使用 `ExecutorService` 等更高级别的 API 进行交互。随着时间的推移，我们将通过废弃和删除过时的方法来抛弃 `Thread` 类以及 `ThreadGroup` 等相关类中不需要的包袱。
 
 ## 测试
+- 现有的测试将确保我们在这里提出的修改不会在众多的配置和执行模式中造成任何意外的退化
+- 我们将扩展 jtreg 测试工具，允许现有的测试在虚拟线程的上下文中运行。这将避免许多测试需要有两个版本。
+- 新的测试将执行所有新的和修订的 API，以及所有支持虚拟线程的领域。
+- 新的压力测试将针对那些对可靠性和性能至关重要的领域。
+- 新的微观基准测试将针对对性能至关重要的领域。
+- 我们将使用一些现有的服务器，包括 Helidon 和 Jetty，进行大规模的测试。
 
 ## 风险和假设
+这个建议的主要风险是由于现有 API 及其实现的变化而导致的兼容性问题：
+
+- 对 `java.io.BufferedInputStream`、`BufferedOutputStream`、`BufferedReader`、`BufferedWriter`、`PrintStream` 和 `PrintWriter` 类中使用的内部（和无记录的）锁定协议的修改，可能会影响那些假定 I/O 方法在它们被调用的流上进行同步的代码。这些变化并不影响扩展这些类并假定由超类锁定的代码，也不影响扩展 `java.io.Reader` 或 `java.io.Writer` 并使用由这些 API 暴露的锁定对象的代码。
+- `java.lang.ThreadGroup` 不再允许销毁线程组，不再支持守护线程组的概念，其 `suspend()`、`resume()` 和 `stop()` 方法总是抛出异常。
+
+有几个与源代码不兼容的 API 变化，以及一个与二进制不兼容的变化，可能会影响扩展 `java.lang.Thread` 的代码：
+- 如果现有源文件中的代码扩展了 `Thread`，并且子类中的某个方法与任何新的 `Thread` 方法相冲突，那么该文件将无法编译，无需更改。
+- `Thread.Builder` 被添加为一个嵌套接口。如果现有源文件中的代码扩展了 `Thread`，导入了一个名为 `Builder` 的类，并且子类中的代码引用了 "Builder" 作为一个简单的名称，那么该文件将不会被编译而不被更改。
+- `Thread.threadId()` 被添加为一个最终方法，用于返回线程的标识符。如果现有源文件中的代码扩展了 `Thread`，并且子类声明了一个名为 `threadId` 的方法，没有参数，那么它将不会被编译。如果现有的已编译代码扩展了 `Thread`，而子类定义了一个名为 `threadId` 的方法，其返回类型为 long，没有参数，那么如果子类被加载，在运行时就会抛出 `IncompatibleClassChangeError`。
+
+当现有代码与利用虚拟线程或新 API 的较新代码混合时，可能会观察到平台线程和虚拟线程之间的一些行为差异：
+- `Thread.setPriority(int)` 方法对虚拟线程没有影响，它们的优先级总是 `Thread.NORM_PRIORITY`。
+- `Thread.setDaemon(boolean)` 方法对虚拟线程没有影响，它们总是守护线程。
+- `Thread.stop()`、`suspend()` 和 `resume()` 方法在虚拟线程上调用时，会抛出一个 `UnsupportedOperationException`。
+- `Thread` API 支持创建不支持线程本地变量的线程。`ThreadLocal.set(T)` 和 `Thread.setContextClassLoader(ClassLoader)` 在一个不支持线程局部变量的线程的上下文中调用时，会抛出一个 `UnsupportedOperationException`。
+- `Thread.getAllStackTraces()` 现在返回所有平台线程的映射，而不是所有线程的映射。
+- 由 `java.net.Socket`、`ServerSocket` 和 `DatagramSocket` 定义的阻塞式 I/O 方法现在在虚拟线程的上下文中被调用时可以被中断。当阻塞在 socket 操作上的线程被中断时，现有的代码可能会中断，这将唤醒该线程并关闭 socket。
+- 虚拟线程不是 `ThreadGroup` 的活动成员。在一个虚拟线程上调用 `Thread.getThreadGroup()` 会返回一个空的假 "VirtualThreads" 组。
+- 在设置了 `SecurityManager` 的情况下运行时，虚拟线程没有权限。
+- 在 JVM TI 中，`GetAllThreads` 和 `GetAllStackTraces` 函数并不返回虚拟线程。启用 `ThreadStart` 和 `ThreadEnd` 事件的现有代理可能会遇到性能问题，因为它们缺乏将事件限制在平台线程的能力。
+- `java.lang.management.ThreadMXBean` API 支持对平台线程的监控和管理，但不支持虚拟线程。
+- -XX:+PreserveFramePointer 标志对虚拟线程的性能有极大的负面影响。
 
 ## 依赖
 - [JEP 416 (Reimplement Core Reflection with Method Handles)](https://openjdk.java.net/jeps/416) in JDK 18 removed the VM-native reflection implementation. This allows virtual threads to park gracefully when methods are invoked reflectively.
@@ -301,4 +410,3 @@ Thread thread = Thread.ofVirtual().name("duke").unstarted(runnable);
 
 ## 参考文档：
  [JEP 425: Virtual Threads (Preview)](https://openjdk.java.net/jeps/425)
- 
