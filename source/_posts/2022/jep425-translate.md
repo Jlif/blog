@@ -210,7 +210,7 @@ JDK 中的绝大多数阻塞操作都会解除对虚拟线程的挂载，从而�
 - [java.util.concurrent](#java-util-concurrent)
 - [Networking](#Networking)
 - [java.io](#java-io)
-- [Java Native Interface (JNI)](##Java-Native-Interface-JNI)
+- [Java Native Interface (JNI)](#Java-Native-Interface-JNI)
 - [Debugging (JVM TI, JDWP, and JDI)](#Debugging-JVM-TI-JDWP-and-JDI)
 - [JDK Flight Recorder (JFR)](#JDK-Flight-Recorder-JFR)
 - [Java Management Extensions (JMX)](#Java-Management-Extensions)
