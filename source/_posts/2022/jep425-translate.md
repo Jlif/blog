@@ -205,16 +205,16 @@ JDK 中的绝大多数阻塞操作都会解除对虚拟线程的挂载，从而�
 
 ### 变更细节
 剩下的几个小节详细描述了我们提出的整个 Java 平台及其实现的变化：
-- [java.lang.Thread](#java.lang.Thread)
-- [Thread-local variables](#Thread-local.variables)
-- [java.util.concurrent](#java.util.concurrent)
+- [java.lang.Thread](#java-lang-Thread)
+- [Thread-local variables](#Thread-local-variables)
+- [java.util.concurrent](#java-util-concurrent)
 - [Networking](#Networking)
-- [java.io](#java.io)
-- [Java Native Interface (JNI)](##Java.Native.Interface)
-- [Debugging (JVM TI, JDWP, and JDI)](#debugging)
-- [JDK Flight Recorder (JFR)](#jfr)
-- [Java Management Extensions (JMX)](#jmx)
-- [java.lang.ThreadGroup](#java.lang.ThreadGroup)
+- [java.io](#java-io)
+- [Java Native Interface (JNI)](##Java-Native-Interface-JNI)
+- [Debugging (JVM TI, JDWP, and JDI)](#Debugging-JVM-TI-JDWP-and-JDI)
+- [JDK Flight Recorder (JFR)](#JDK-Flight-Recorder-JFR)
+- [Java Management Extensions (JMX)](#Java-Management-Extensions)
+- [java.lang.ThreadGroup](#java-lang-ThreadGroup)
 
 #### java.lang.Thread
 我们更新了下列的 [java.lang.Thread](https://download.java.net/java/early_access/loom/docs/api/java.base/java/lang/Thread.html) ：
@@ -240,7 +240,7 @@ Thread thread = Thread.ofVirtual().name("duke").unstarted(runnable);
 - 在设置了 `SecurityManager` 的情况下运行时，虚拟线程没有权限。
 - 虚拟线程不支持 `stop()`、`suspend()` 或 `resume()` 方法。当在虚拟线程上调用这些方法时，会抛出一个异常。
 
-#### Thread-local variables {#Thread-local.variables}
+#### Thread-local variables
 虚拟线程支持线程本地变量（ThreadLocal）和可继承的线程本地变量（InheritableThreadLocal），就像平台线程一样，所以它们可以运行使用现有代码的线程本地变量。然而，由于虚拟线程可能非常多，所以在使用线程本地变量时要仔细考虑。特别是，不要使用线程本地变量来在线程池中共享同一线程的多个任务之间汇集昂贵的资源。虚拟线程不应该被集中起来，因为每个线程在其生命周期内只用于运行一个任务。我们已经从 `java.base` 模块中删除了许多线程本地变量变量的使用，为虚拟线程做准备，以减少数百万线程运行时的内存占用。
 
 此外：
@@ -277,12 +277,12 @@ Thread thread = Thread.ofVirtual().name("duke").unstarted(runnable);
 
 此外，`BufferedOutputStream`、`BufferedWriter` 和 `OutputStreamWriter` 的流编码器所使用的缓冲区的初始大小现在更小了，以便在堆中有许多 `streams` 或 `writers` 时减少内存的使用（如果有一百万个虚拟线程，每个线程在一个套接字连接上有一个缓冲流，就可能出现这种情况）。
 
-#### Java Native Interface (JNI) {#Java.Native.Interface}
+#### Java Native Interface (JNI)
 JNI 定义了一个新的函数，`IsVirtualThread`，用来测试一个对象是否是一个虚拟线程。
 
 JNI 规范在其他方面没有变化。
 
-#### Debugging (JVM TI, JDWP, and JDI) {#debugging}
+#### Debugging (JVM TI, JDWP, and JDI)
 调试架构由三个接口组成：JVM 工具接口（JVM TI）、Java Debug Wire Protocol（JDWP）和 Java Debug Interface（JDI）。这三个接口现在都支持虚拟线程。
 
 对 JVM TI 的更新是：
@@ -305,13 +305,13 @@ JDWP 的更新是：
 
 如上所述，虚拟线程不被认为是线程组中的活动线程。因此，由 JVM TI 函数 `GetThreadGroupChildren`、JDWP 命令 `ThreadGroupReference`/`Children` 和 JDI 方法 `com.sun.jdi.ThreadGroupReference.threads()` 返回的线程列表只包括平台线程。
 
-#### JDK Flight Recorder (JFR) {#jfr}
+#### JDK Flight Recorder (JFR)
 JFR 通过几个新的事件支持虚拟线程：
 - `jdk.VirtualThreadStart` 和 `jdk.VirtualThreadEnd` 表示虚拟线程开始和结束。这些事件在默认情况下是禁用的。
 - `jdk.VirtualThreadPinned` 表示一个虚拟线程在自旋时被挂起，即没有释放其平台线程（见 [讨论](#虚拟线程的运行) ）。这个事件默认是启用的，阈值为 20ms。
 - `jdk.VirtualThreadSubmitFailed` 表示启动或取消挂起虚拟线程失败，可能是因为资源问题。该事件默认为启用。
 
-#### Java Management Extensions (JMX) {#jmx}
+#### Java Management Extensions
 `java.lang.management.ThreadMXBean` 只支持对平台线程的监控和管理。`findDeadlockedThreads()` 方法可以找到处于死锁状态的平台线程的周期；它不会找到处于死锁状态的虚拟线程的周期。
 
 `com.sun.management.HotSpotDiagnosticsMXBean` 中的一个新方法可以生成上述的新式线程转储。这个方法也可以通过平台的 `MBeanServer` 从本地或远程的 JMX 工具间接调用。
